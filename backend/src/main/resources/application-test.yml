@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: jdbc:tc:postgresql:16:///test
+    username: test
+    password: test
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+ai:
+  provider: mock
+app:
+  jwt:
+    secret: test-secret-please-replace-with-a-32-character-long-secret
+  uploads:
+    dir: /tmp/ecommerce-test-uploads
+    public-base-url: /files
+  bootstrap:
+    use-deterministic-vectors: true

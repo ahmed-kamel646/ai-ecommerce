@@ -1,83 +1,79 @@
 package com.ahmed.ecommerce.auth;
 
-import com.ahmed.ecommerce.user.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
-import java.util.Date;
-import java.util.function.Function;
-import javax.crypto.SecretKey;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
+import java.util.function.Function;
+
 @Service
+@Slf4j
 public class JwtService {
-    private static final Logger log = LoggerFactory.getLogger(JwtService.class);
 
-    @Value("${app.jwt.secret}")
-    private String secretKey;
+    private final String secret;
+    private final long expirationMs;
+    private SecretKey key;
 
-    @Value("${app.jwt.expiration-ms}")
-    private long jwtExpiration;
+    public JwtService(@Value("${app.jwt.secret}") String secret,
+                      @Value("${app.jwt.expiration-ms}") long expirationMs) {
+        this.secret = secret;
+        this.expirationMs = expirationMs;
+    }
 
     @PostConstruct
-    public void init() {
-        if ("change-me-in-prod-please-use-32+chars".equals(secretKey)) {
-            log.warn("Using default JWT secret. Change this in production!");
+    void init() {
+        byte[] bytes = secret.getBytes(StandardCharsets.UTF_8);
+        if (bytes.length < 32) {
+            throw new IllegalStateException(
+                    "app.jwt.secret must be at least 32 bytes UTF-8; got " + bytes.length);
         }
+        this.key = Keys.hmacShaKeyFor(bytes);
     }
 
-    public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
-    }
-
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = extractAllClaims(token);
-        return claimsResolver.apply(claims);
-    }
-
-    public String generateToken(User user) {
+    public String generate(UserDetails user, String role) {
+        Date now = new Date();
         return Jwts.builder()
-                .subject(user.getEmail())
-                .claim("role", user.getRole().name())
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + jwtExpiration))
-                .signWith(getSignInKey(), Jwts.SIG.HS256)
+                .subject(user.getUsername())
+                .claim("role", role)
+                .issuedAt(now)
+                .expiration(new Date(now.getTime() + expirationMs))
+                .signWith(key, Jwts.SIG.HS256)
                 .compact();
     }
 
-    public boolean isTokenValid(
-            String token, org.springframework.security.core.userdetails.UserDetails userDetails) {
+    public String extractEmail(String token) {
+        return extractClaim(token, Claims::getSubject);
+    }
+
+    public boolean validate(String token, UserDetails user) {
         try {
-            final String username = extractUsername(token);
-            return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
-        } catch (JwtException | IllegalArgumentException e) {
-            log.error("Invalid JWT token: {}", e.getMessage());
+            String email = extractEmail(token);
+            return email != null && email.equals(user.getUsername()) && !isExpired(token);
+        } catch (JwtException ex) {
             return false;
         }
     }
 
-    private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
+    public boolean isExpired(String token) {
+        Date exp = extractClaim(token, Claims::getExpiration);
+        return exp.before(new Date());
     }
 
-    private Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
-    }
-
-    private Claims extractAllClaims(String token) {
-        return Jwts.parser()
-                .verifyWith(getSignInKey())
+    public <T> T extractClaim(String token, Function<Claims, T> resolver) {
+        Claims claims = Jwts.parser()
+                .verifyWith(key)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
-    }
-
-    private SecretKey getSignInKey() {
-        return Keys.hmacShaKeyFor(secretKey.getBytes());
+        return resolver.apply(claims);
     }
 }

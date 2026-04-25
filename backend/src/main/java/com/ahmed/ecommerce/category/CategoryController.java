@@ -1,19 +1,22 @@
 package com.ahmed.ecommerce.category;
 
-import java.util.List;
+import com.ahmed.ecommerce.category.dto.CategoryDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/categories")
 @RequiredArgsConstructor
 public class CategoryController {
-    private final CategoryRepository categoryRepository;
+
+    private final CategoryService categoryService;
 
     @GetMapping
-    public List<Category> getAll() {
-        return categoryRepository.findAll();
+    public List<CategoryDto> list() {
+        return categoryService.listAll();
     }
 }

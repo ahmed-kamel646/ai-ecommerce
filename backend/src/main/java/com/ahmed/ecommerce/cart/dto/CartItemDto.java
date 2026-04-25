@@ -1,13 +1,14 @@
 package com.ahmed.ecommerce.cart.dto;
 
-import lombok.Data;
+import java.math.BigDecimal;
 
-@Data
-public class CartItemDto {
-    private Long id;
-    private Long productId;
-    private String name;
-    private Double unitPrice;
-    private Integer quantity;
-    private String imageUrl;
+public record CartItemDto(
+        Long id,
+        Long productId,
+        String name,
+        BigDecimal unitPrice,
+        int quantity,
+        String imageUrl,
+        int stock
+) {
 }

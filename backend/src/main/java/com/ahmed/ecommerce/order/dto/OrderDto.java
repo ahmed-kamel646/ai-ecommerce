@@ -1,14 +1,20 @@
 package com.ahmed.ecommerce.order.dto;
 
-import java.time.Instant;
-import java.util.List;
-import lombok.Data;
+import com.ahmed.ecommerce.order.OrderStatus;
+import com.ahmed.ecommerce.order.PaymentMethod;
 
-@Data
-public class OrderDto {
-    private Long id;
-    private Double total;
-    private String status;
-    private Instant createdAt;
-    private List<OrderItemDto> items;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.List;
+
+public record OrderDto(
+        Long id,
+        BigDecimal total,
+        OrderStatus status,
+        String shippingAddress,
+        PaymentMethod paymentMethod,
+        OffsetDateTime createdAt,
+        OffsetDateTime updatedAt,
+        List<OrderItemDto> items
+) {
 }
