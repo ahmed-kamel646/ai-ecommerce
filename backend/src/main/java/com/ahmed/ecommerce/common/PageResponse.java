@@ -9,9 +9,16 @@ public record PageResponse<T>(
         int page,
         int size,
         long totalElements,
-        int totalPages
+        int totalPages,
+        boolean last
 ) {
     public static <T> PageResponse<T> of(Page<T> p) {
-        return new PageResponse<>(p.getContent(), p.getNumber(), p.getSize(), p.getTotalElements(), p.getTotalPages());
+        return new PageResponse<>(
+                p.getContent(),
+                p.getNumber(),
+                p.getSize(),
+                p.getTotalElements(),
+                p.getTotalPages(),
+                p.isLast());
     }
 }

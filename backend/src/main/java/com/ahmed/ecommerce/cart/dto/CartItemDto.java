@@ -5,10 +5,11 @@ import java.math.BigDecimal;
 public record CartItemDto(
         Long id,
         Long productId,
-        String name,
+        String productName,
+        String productImageUrl,
         BigDecimal unitPrice,
         int quantity,
-        String imageUrl,
+        BigDecimal lineTotal,
         int stock
 ) {
 }
