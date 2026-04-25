@@ -56,7 +56,10 @@ public class ProductPersistenceService {
         if (vector != null) {
             p.setImageVector(vector);
         }
-        if ((ai != null && ai.description() != null && !ai.description().isBlank()) || vector != null) {
+        // Promote out of draft only when we have a real description — a vector
+        // alone (e.g. Vertex generative stub returning empty) is not enough to
+        // make the product publicly visible.
+        if (ai != null && ai.description() != null && !ai.description().isBlank()) {
             p.setDraft(false);
         }
         return p;
