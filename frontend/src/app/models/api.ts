@@ -69,7 +69,7 @@ export interface Order {
 }
 
 export interface AuthResponse {
-  token: string;
+  accessToken: string;
   email: string;
   role: 'ADMIN' | 'SHOPPER';
 }

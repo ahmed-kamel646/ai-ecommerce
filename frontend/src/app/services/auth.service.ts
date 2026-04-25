@@ -46,7 +46,7 @@ export class AuthService {
   }
 
   private persist(res: AuthResponse): void {
-    localStorage.setItem(TOKEN_KEY, res.token);
+    localStorage.setItem(TOKEN_KEY, res.accessToken);
     const user: StoredUser = { email: res.email, role: res.role };
     localStorage.setItem(USER_KEY, JSON.stringify(user));
     this._user.set(user);
