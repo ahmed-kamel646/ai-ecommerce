@@ -7,7 +7,7 @@ spring:
     password: ${DB_PASSWORD:ecommerce}
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: validate
     open-in-view: false
     properties:
       hibernate:
@@ -19,21 +19,28 @@ spring:
     locations: classpath:db/migration
   servlet:
     multipart:
-      max-file-size: 10MB
+      max-file-size: 5MB
       max-request-size: 10MB
+  jackson:
+    serialization:
+      write-bigdecimal-as-plain: true
+    deserialization:
+      fail-on-unknown-properties: false
 
 server:
   port: 8080
 
 app:
   jwt:
-    secret: ${JWT_SECRET:change-me-in-prod-please-use-32+chars}
+    secret: ${JWT_SECRET:please-replace-with-32-plus-char-random-secret-key}
     expiration-ms: 86400000
   uploads:
     dir: ${UPLOADS_DIR:./uploads}
     public-base-url: /files
   cors:
-    allowed-origins: http://localhost:4200,http://localhost:10581,http://localhost:4201,http://localhost:3000
+    allowed-origins: ${CORS_ORIGINS:http://localhost:4200}
+  bootstrap:
+    use-deterministic-vectors: ${USE_DETERMINISTIC_VECTORS:false}
 
 ai:
   provider: ${AI_PROVIDER:mock}
@@ -47,3 +54,9 @@ ai:
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
+
+logging:
+  level:
+    root: INFO
+    com.ahmed.ecommerce: DEBUG
+    org.hibernate.SQL: WARN

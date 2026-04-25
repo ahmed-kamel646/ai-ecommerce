@@ -1,12 +1,15 @@
 package com.ahmed.ecommerce.product.dto;
 
-import lombok.Data;
+import java.math.BigDecimal;
 
-@Data
-public class ProductSummaryDto {
-    private Long id;
-    private String name;
-    private Double price;
-    private String imageUrl;
-    private String categoryName;
+public record ProductSummaryDto(
+        Long id,
+        String name,
+        BigDecimal price,
+        String imageUrl,
+        String categoryName,
+        int stock,
+        boolean draft,
+        long soldCount
+) {
 }

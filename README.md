@@ -1,109 +1,139 @@
 # AI-Enhanced E-commerce Platform
 
-A production-quality monorepo for a final-year graduation project, featuring an AI-enhanced e-commerce backend (Spring Boot) and frontend (Angular).
+Full-stack e-commerce monorepo with image-similarity recommendations and AI-drafted product descriptions.
+
+- **Backend:** Spring Boot 3.3.4 / Java 21 / PostgreSQL 16 / Flyway / JWT
+- **Frontend:** Angular 17 (standalone, signals, Tailwind) — _added in a later PR_
+- **AI:** Mock provider by default, swap to Vertex AI (`multimodalembedding@001` + `gemini-1.5-flash`) via `AI_PROVIDER=vertex`
 
 ## Prerequisites
-- Java 21 (`java -version`)
-- Maven 3.9+ (`mvn -v`)
-- Node 20+ and npm 10+
-- PostgreSQL 16 on `localhost:5432`
 
-## 1. Create the database (once)
-For Ubuntu, macOS (Homebrew), and Windows (EnterpriseDB), run the following as the `postgres` superuser:
-```bash
-psql -U postgres -f backend/scripts/setup-db.sql
-```
+| Tool       | Version | Verify                |
+| ---------- | ------- | --------------------- |
+| Java       | 21      | `java -version`       |
+| Maven      | 3.9+    | `mvn -version`        |
+| Node       | 20.x    | `node -v`             |
+| npm        | 10.x    | `npm -v`              |
+| PostgreSQL | 16      | `psql --version`      |
 
-## 2. Configure environment
+### Install PostgreSQL
+
+| OS              | Command                                                                |
+| --------------- | ---------------------------------------------------------------------- |
+| Ubuntu / Debian | `sudo apt install postgresql-16 && sudo systemctl start postgresql`    |
+| macOS (brew)    | `brew install postgresql@16 && brew services start postgresql@16`      |
+| Windows         | EnterpriseDB installer, default port 5432, set superuser password.     |
+
+## Local setup
+
 ```bash
+# 1. Database
+sudo -u postgres psql -f backend/scripts/setup-db.sql
+
+# 2. Configure (defaults are fine for local dev)
 cp .env.example .env
-# AI_PROVIDER=mock works out of the box.
+
+# 3. Backend
+cd backend
+mvn spring-boot:run         # http://localhost:8080
 ```
 
-## 3. Run the backend
+The app uses Flyway and starts with `spring.jpa.hibernate.ddl-auto=validate`. Three migrations apply automatically on first start:
+
+- `V1__init.sql` — schema (users, category, product, cart, cart_item, orders, order_item)
+- `V2__seed.java` — categories, demo users (with freshly-computed BCrypt hashes), 12 sample products
+- `V3__indexes.sql` — indexes
+
+## Default credentials
+
+| Role    | Email             | Password      |
+| ------- | ----------------- | ------------- |
+| Admin   | admin@demo.com    | `Admin123!`   |
+| Shopper | shopper@demo.com  | `Shopper123!` |
+
+## Configuration
+
+All config keys live in `backend/src/main/resources/application.yml` and are overridable via env vars (see `.env.example`):
+
+| Env var                          | Default                                          | Notes                                       |
+| -------------------------------- | ------------------------------------------------ | ------------------------------------------- |
+| `DB_URL`                         | `jdbc:postgresql://localhost:5432/ecommerce`     |                                             |
+| `DB_USER` / `DB_PASSWORD`        | `ecommerce` / `ecommerce`                        |                                             |
+| `JWT_SECRET`                     | _placeholder_                                    | **Must be ≥ 32 UTF-8 bytes** or app fails fast |
+| `UPLOADS_DIR`                    | `./uploads`                                      | Stored files for product images             |
+| `CORS_ORIGINS`                   | `http://localhost:4200`                          | Comma-separated allowlist                   |
+| `AI_PROVIDER`                    | `mock`                                           | `mock` or `vertex`                          |
+| `GOOGLE_APPLICATION_CREDENTIALS` | _empty_                                          | Path to GCP service-account JSON            |
+
+## Switching to real Vertex AI
+
+1. Create a service account and download a JSON key.
+2. Export `GOOGLE_APPLICATION_CREDENTIALS=/abs/path/to/key.json` and `GOOGLE_CLOUD_PROJECT=<your-project>`.
+3. Set `AI_PROVIDER=vertex`.
+4. Restart the backend. The deterministic mock embeddings are replaced with `multimodalembedding@001` (1408-dim) and Gemini Flash for descriptions.
+
+> The mock embedder produces a deterministic vector from the **bytes of the input image**, NOT from any visual semantic. Two visually-similar products won't have similar mock vectors. The "Visually Similar" carousel on `mock` is therefore approximately random — it exists to verify the math pipeline works. Switch to `vertex` for true visual similarity.
+
+## API
+
+OpenAPI / Swagger UI: http://localhost:8080/swagger-ui.html
+
+Quick auth examples:
+
+```bash
+# Register a shopper
+curl -X POST http://localhost:8080/api/auth/register \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"alice@example.com","password":"alice1234"}'
+
+# Login
+curl -X POST http://localhost:8080/api/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"admin@demo.com","password":"Admin123!"}'
+
+# Categories (public)
+curl http://localhost:8080/api/categories
+```
+
+## Architecture
+
+```mermaid
+flowchart LR
+  Browser-->Angular
+  Angular-->|/api| SpringBoot
+  SpringBoot-->|JDBC| PostgreSQL
+  SpringBoot-->|Embedding|MockOrVertex
+  SpringBoot-->|/files|LocalDisk
+```
+
+## Project structure
+
+```
+ai-ecommerce/
+├── backend/                           # Spring Boot 3.3.4 / Java 21
+│   ├── pom.xml
+│   ├── scripts/setup-db.sql
+│   └── src/{main,test}/...
+├── frontend/                          # Angular 17 (added later)
+└── .github/workflows/ci.yml
+```
+
+## Testing
+
 ```bash
 cd backend
-set -a; source ../.env; set +a
-mvn spring-boot:run
-```
-Flyway creates tables + seeds data; `VectorBackfillRunner` fills the 8 seed vectors on first start. Swagger: `http://localhost:8080/swagger-ui.html`.
-
-## 4. Run the frontend
-```bash
-cd frontend
-npm install
-npm start
-```
-Opens on `http://localhost:4200`.
-
-## 5. Default credentials
-- Admin: `admin@demo.com` / `Admin123!`
-- Shopper: `shopper@demo.com` / `Shopper123!`
-
-## 6. Switching to real Vertex AI
-To use real Vertex AI, edit `.env`:
-```
-AI_PROVIDER=vertex
-GOOGLE_CLOUD_PROJECT=your-gcp-project-id
-VERTEX_LOCATION=us-central1
-GOOGLE_APPLICATION_CREDENTIALS=/absolute/path/to/service-account.json
+mvn -B clean verify         # unit + integration tests
 ```
 
-## 7. Sample curl calls
+## Troubleshooting
 
-### Register
-```bash
-curl -X POST http://localhost:8080/api/auth/register \
--H "Content-Type: application/json" \
--d '{"email":"newuser@demo.com","password":"Password123!"}'
-```
+| Symptom                                                  | Fix                                                                       |
+| -------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `connection refused` on startup                          | PostgreSQL not running. `sudo systemctl start postgresql`.                |
+| `relation "product" does not exist`                      | App started without Flyway. Make sure `spring.flyway.enabled=true`.       |
+| `JWT secret must be at least 32 bytes`                   | Set `JWT_SECRET` to a string ≥ 32 UTF-8 bytes (e.g. a 40-char passphrase). |
+| `Could not change directory to "/home/ubuntu"` from psql | Harmless. Run `sudo -u postgres psql` from `/tmp` to silence it.          |
 
-### Login
-```bash
-curl -X POST http://localhost:8080/api/auth/login \
--H "Content-Type: application/json" \
--d '{"email":"shopper@demo.com","password":"Shopper123!"}'
-# Note the token from the response
-```
+## License
 
-### List Products
-```bash
-curl http://localhost:8080/api/products?page=0&size=12
-```
-
-### Get Similar Products
-```bash
-curl http://localhost:8080/api/products/1/similar?limit=6
-```
-
-### Admin Upload (Multipart)
-```bash
-curl -X POST http://localhost:8080/api/admin/products \
--H "Authorization: Bearer <ADMIN_TOKEN>" \
--F "name=Test Product" \
--F "price=99.99" \
--F "stock=10" \
--F "categoryId=1" \
--F "autoApprove=true" \
--F "image=@/path/to/image.jpg"
-```
-
-### Admin Update
-```bash
-curl -X PUT http://localhost:8080/api/admin/products/1 \
--H "Authorization: Bearer <ADMIN_TOKEN>" \
--H "Content-Type: application/json" \
--d '{"name":"Updated Product","price":109.99,"stock":15,"categoryId":1,"description":"New desc","seoTags":["tag1","tag2"]}'
-```
-
-### Place Order
-```bash
-curl -X POST http://localhost:8080/api/orders \
--H "Authorization: Bearer <SHOPPER_TOKEN>"
-```
-
-### List Orders
-```bash
-curl -X GET http://localhost:8080/api/orders \
--H "Authorization: Bearer <SHOPPER_TOKEN>"
-```
+Educational / graduation project. No license header required for source files.

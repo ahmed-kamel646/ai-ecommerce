@@ -6,23 +6,21 @@ import org.springframework.retry.backoff.ExponentialBackOffPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
 
+import java.util.Map;
+
 @Configuration
 public class RetryConfig {
 
     @Bean
-    public RetryTemplate aiRetryTemplate() {
-        RetryTemplate retryTemplate = new RetryTemplate();
-
-        ExponentialBackOffPolicy backOffPolicy = new ExponentialBackOffPolicy();
-        backOffPolicy.setInitialInterval(500);
-        backOffPolicy.setMultiplier(2.0);
-        backOffPolicy.setMaxInterval(2000);
-        retryTemplate.setBackOffPolicy(backOffPolicy);
-
-        SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy();
-        retryPolicy.setMaxAttempts(3);
-        retryTemplate.setRetryPolicy(retryPolicy);
-
-        return retryTemplate;
+    public RetryTemplate retryTemplate() {
+        SimpleRetryPolicy policy = new SimpleRetryPolicy(3, Map.of(Exception.class, true));
+        ExponentialBackOffPolicy backOff = new ExponentialBackOffPolicy();
+        backOff.setInitialInterval(500);
+        backOff.setMultiplier(2.0);
+        backOff.setMaxInterval(2000);
+        RetryTemplate template = new RetryTemplate();
+        template.setRetryPolicy(policy);
+        template.setBackOffPolicy(backOff);
+        return template;
     }
 }

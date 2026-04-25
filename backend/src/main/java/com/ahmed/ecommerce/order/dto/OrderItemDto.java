@@ -1,12 +1,13 @@
 package com.ahmed.ecommerce.order.dto;
 
-import lombok.Data;
+import java.math.BigDecimal;
 
-@Data
-public class OrderItemDto {
-    private Long id;
-    private Long productId;
-    private String name;
-    private Double unitPrice;
-    private Integer quantity;
+public record OrderItemDto(
+        Long id,
+        Long productId,
+        String productName,
+        String productImageUrl,
+        BigDecimal unitPrice,
+        int quantity
+) {
 }

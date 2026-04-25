@@ -1,10 +1,7 @@
 package com.ahmed.ecommerce.cart.dto;
 
+import java.math.BigDecimal;
 import java.util.List;
-import lombok.Data;
 
-@Data
-public class CartDto {
-    private List<CartItemDto> items;
-    private Double total;
+public record CartDto(List<CartItemDto> items, BigDecimal total) {
 }

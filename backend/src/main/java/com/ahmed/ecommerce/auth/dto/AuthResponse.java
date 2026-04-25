@@ -1,16 +1,6 @@
 package com.ahmed.ecommerce.auth.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.ahmed.ecommerce.user.Role;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class AuthResponse {
-    private String accessToken;
-    private String role;
-    private String email;
+public record AuthResponse(String accessToken, Role role, String email) {
 }

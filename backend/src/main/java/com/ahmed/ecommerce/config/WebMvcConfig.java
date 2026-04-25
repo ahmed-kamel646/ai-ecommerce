@@ -1,11 +1,13 @@
 package com.ahmed.ecommerce.config;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
@@ -17,9 +19,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
     private String publicBaseUrl;
 
     @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        Path uploadPath = Paths.get(uploadsDir).toAbsolutePath().normalize();
+    public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) {
+        Path absolute = Paths.get(uploadsDir).toAbsolutePath().normalize();
         registry.addResourceHandler(publicBaseUrl + "/**")
-                .addResourceLocations("file:" + uploadPath.toString() + "/");
+                .addResourceLocations("file:" + absolute + "/")
+                .setCachePeriod(3600);
     }
 }

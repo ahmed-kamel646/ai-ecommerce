@@ -1,15 +1,21 @@
 package com.ahmed.ecommerce.common;
 
-import java.time.Instant;
-import lombok.Builder;
-import lombok.Data;
+import java.time.OffsetDateTime;
+import java.util.Map;
 
-@Data
-@Builder
-public class ApiError {
-    private Instant timestamp;
-    private int status;
-    private String error;
-    private String message;
-    private String path;
+public record ApiError(
+        OffsetDateTime timestamp,
+        int status,
+        String error,
+        String message,
+        String path,
+        Map<String, String> fieldErrors
+) {
+    public static ApiError of(int status, String error, String message, String path) {
+        return new ApiError(OffsetDateTime.now(), status, error, message, path, null);
+    }
+
+    public static ApiError of(int status, String error, String message, String path, Map<String, String> fieldErrors) {
+        return new ApiError(OffsetDateTime.now(), status, error, message, path, fieldErrors);
+    }
 }
