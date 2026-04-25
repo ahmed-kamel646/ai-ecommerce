@@ -14,6 +14,8 @@ public record ProductDetailDto(
         List<String> seoTags,
         String categoryName,
         Long categoryId,
-        OffsetDateTime createdAt
+        OffsetDateTime createdAt,
+        long soldCount,
+        boolean draft
 ) {
 }

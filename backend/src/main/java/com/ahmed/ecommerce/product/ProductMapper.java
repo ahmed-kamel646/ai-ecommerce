@@ -34,7 +34,9 @@ public class ProductMapper {
                 splitTags(p.getSeoTags()),
                 p.getCategory() == null ? null : p.getCategory().getName(),
                 p.getCategory() == null ? null : p.getCategory().getId(),
-                p.getCreatedAt());
+                p.getCreatedAt(),
+                p.getSoldCount(),
+                p.isDraft());
     }
 
     public ProductDraftDto toDraft(Product p) {

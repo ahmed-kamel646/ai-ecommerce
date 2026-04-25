@@ -123,17 +123,22 @@ public class CartService {
 
     private CartDto toDto(Cart cart) {
         List<CartItemDto> items = cart.getItems().stream()
-                .map(it -> new CartItemDto(
-                        it.getId(),
-                        it.getProduct().getId(),
-                        it.getProduct().getName(),
-                        it.getProduct().getPrice(),
-                        it.getQuantity(),
-                        it.getProduct().getImageUrl(),
-                        it.getProduct().getStock()))
+                .map(it -> {
+                    BigDecimal lineTotal = it.getProduct().getPrice()
+                            .multiply(BigDecimal.valueOf(it.getQuantity()));
+                    return new CartItemDto(
+                            it.getId(),
+                            it.getProduct().getId(),
+                            it.getProduct().getName(),
+                            it.getProduct().getImageUrl(),
+                            it.getProduct().getPrice(),
+                            it.getQuantity(),
+                            lineTotal,
+                            it.getProduct().getStock());
+                })
                 .toList();
         BigDecimal total = items.stream()
-                .map(i -> i.unitPrice().multiply(BigDecimal.valueOf(i.quantity())))
+                .map(CartItemDto::lineTotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         return new CartDto(items, total);
     }
