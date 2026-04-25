@@ -1,0 +1,9 @@
+node_modules/
+target/
+.angular/
+dist/
+.idea/
+*.iml
+.vscode/
+.temp/
+.DS_Store
