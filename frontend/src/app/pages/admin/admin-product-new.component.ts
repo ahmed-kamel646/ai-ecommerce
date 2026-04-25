@@ -111,11 +111,24 @@ export class AdminProductNewComponent implements OnInit {
     const fd = new FormData();
     fd.append('data', data);
     fd.append('image', this.file);
-    this.http.post<{ id: number }>(`${environment.apiBase}/api/admin/products`, fd).subscribe({
+    this.http.post<{ id: number; draft: boolean }>(`${environment.apiBase}/api/admin/products`, fd).subscribe({
       next: created => {
         this.loading.set(false);
-        this.notify.push('success', 'Product created.');
-        this.router.navigate(['/products', created.id]);
+        // The backend returns the product even when AI generation fails — in
+        // that case `draft` stays true and `/products/:id` (public) 404s,
+        // because draft products aren't published. Surface that to the admin
+        // instead of dumping them on a 404 page.
+        if (created.draft) {
+          this.notify.push(
+            'info',
+            'Product created as draft — AI generation did not produce a description. ' +
+              'It will not appear in the public catalog until edited.'
+          );
+          this.router.navigate(['/admin/orders']);
+        } else {
+          this.notify.push('success', 'Product created.');
+          this.router.navigate(['/products', created.id]);
+        }
       },
       error: err => {
         this.loading.set(false);

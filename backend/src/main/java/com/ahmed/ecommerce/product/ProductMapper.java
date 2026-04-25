@@ -48,7 +48,8 @@ public class ProductMapper {
                 p.getStock(),
                 p.getImageUrl(),
                 splitTags(p.getSeoTags()),
-                p.getCategory() == null ? null : p.getCategory().getName());
+                p.getCategory() == null ? null : p.getCategory().getName(),
+                p.isDraft());
     }
 
     private List<String> splitTags(String csv) {

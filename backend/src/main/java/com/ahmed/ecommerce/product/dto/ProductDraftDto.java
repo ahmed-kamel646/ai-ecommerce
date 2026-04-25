@@ -11,6 +11,7 @@ public record ProductDraftDto(
         int stock,
         String imageUrl,
         List<String> seoTags,
-        String categoryName
+        String categoryName,
+        boolean draft
 ) {
 }
