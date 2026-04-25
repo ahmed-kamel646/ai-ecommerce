@@ -124,7 +124,8 @@ export class AdminProductNewComponent implements OnInit {
             'Product created as draft — AI generation did not produce a description. ' +
               'It will not appear in the public catalog until edited.'
           );
-          this.router.navigate(['/admin/orders']);
+          // Reset the form so the admin can immediately create another product.
+          this.resetForm();
         } else {
           this.notify.push('success', 'Product created.');
           this.router.navigate(['/products', created.id]);
@@ -135,5 +136,14 @@ export class AdminProductNewComponent implements OnInit {
         this.error.set(err?.error?.message || 'Failed to create product.');
       }
     });
+  }
+
+  private resetForm() {
+    this.name = '';
+    this.price = 0;
+    this.stock = 0;
+    this.categoryId = null;
+    this.file = null;
+    this.error.set(null);
   }
 }
