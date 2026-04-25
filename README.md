@@ -3,7 +3,7 @@
 Full-stack e-commerce monorepo with image-similarity recommendations and AI-drafted product descriptions.
 
 - **Backend:** Spring Boot 3.3.4 / Java 21 / PostgreSQL 16 / Flyway / JWT
-- **Frontend:** Angular 17 (standalone, signals, Tailwind) — _added in a later PR_
+- **Frontend:** Angular 17 (standalone components, signals, Tailwind, ESLint, lazy routes)
 - **AI:** Mock provider by default, swap to Vertex AI (`multimodalembedding@001` + `gemini-1.5-flash`) via `AI_PROVIDER=vertex`
 
 ## Prerequisites
@@ -36,7 +36,14 @@ cp .env.example .env
 # 3. Backend
 cd backend
 mvn spring-boot:run         # http://localhost:8080
+
+# 4. Frontend (in a second terminal)
+cd frontend
+npm ci
+npm start                    # http://localhost:4200
 ```
+
+The Angular app reads the API base from `src/environments/environment.ts` (defaults to `http://localhost:8080`). All requests carry a JWT through `authInterceptor`; `errorInterceptor` maps HTTP status codes to the right UX (401 → re-login redirect, 403 → "no permission" toast, 409 → server message, 5xx → generic error).
 
 The app uses Flyway and starts with `spring.jpa.hibernate.ddl-auto=validate`. Three migrations apply automatically on first start:
 

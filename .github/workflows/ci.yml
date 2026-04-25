@@ -47,5 +47,10 @@ jobs:
         working-directory: frontend
         run: npm run build
       - if: steps.check.outputs.exists == 'true'
+        id: setup-chrome
+        uses: browser-actions/setup-chrome@v1
+      - if: steps.check.outputs.exists == 'true'
         working-directory: frontend
+        env:
+          CHROME_BIN: ${{ steps.setup-chrome.outputs.chrome-path }}
         run: npm test -- --watch=false --browsers=ChromeHeadlessCI
