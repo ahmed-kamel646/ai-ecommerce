@@ -108,7 +108,9 @@ public class CartService {
     }
 
     public Cart getOrCreateCart(User user) {
-        return cartRepository.findByUser(user).orElseGet(() -> {
+        // Use the entity-graph fetch so addItem doesn't fall back to N+1 lazy loads
+        // when toDto walks each item's product and category.
+        return cartRepository.findWithItemsByUser(user).orElseGet(() -> {
             Cart cart = Cart.builder().user(user).build();
             return cartRepository.save(cart);
         });
