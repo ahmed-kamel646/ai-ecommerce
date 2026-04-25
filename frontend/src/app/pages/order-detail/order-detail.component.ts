@@ -3,6 +3,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Order } from '../../models/api';
 import { OrderService } from '../../services/order.service';
+import { resolveImageUrl } from '../../shared/image-url';
 
 @Component({
   selector: 'app-order-detail',
@@ -80,8 +81,6 @@ export class OrderDetailComponent implements OnInit {
   }
 
   imageSrc(url: string | null | undefined): string {
-    if (!url) return 'https://placehold.co/200x200?text=No+Image';
-    if (url.startsWith('http')) return url;
-    return `http://localhost:8080${url}`;
+    return resolveImageUrl(url, 'https://placehold.co/200x200?text=No+Image');
   }
 }

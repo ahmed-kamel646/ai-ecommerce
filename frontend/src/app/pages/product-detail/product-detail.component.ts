@@ -6,6 +6,7 @@ import { AuthService } from '../../services/auth.service';
 import { CartService } from '../../services/cart.service';
 import { NotificationService } from '../../services/notification.service';
 import { ProductService } from '../../services/product.service';
+import { resolveImageUrl } from '../../shared/image-url';
 
 @Component({
   selector: 'app-product-detail',
@@ -101,9 +102,7 @@ export class ProductDetailComponent implements OnInit {
   }
 
   imageSrc(url: string | null | undefined): string {
-    if (!url) return 'https://placehold.co/600x600?text=No+Image';
-    if (url.startsWith('http')) return url;
-    return `http://localhost:8080${url}`;
+    return resolveImageUrl(url, 'https://placehold.co/600x600?text=No+Image');
   }
 
   add() {

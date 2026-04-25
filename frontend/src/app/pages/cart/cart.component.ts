@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { CartService } from '../../services/cart.service';
 import { NotificationService } from '../../services/notification.service';
+import { resolveImageUrl } from '../../shared/image-url';
 
 @Component({
   selector: 'app-cart',
@@ -62,9 +63,7 @@ export class CartComponent implements OnInit {
   }
 
   imageSrc(url: string | null | undefined): string {
-    if (!url) return 'https://placehold.co/200x200?text=No+Image';
-    if (url.startsWith('http')) return url;
-    return `http://localhost:8080${url}`;
+    return resolveImageUrl(url, 'https://placehold.co/200x200?text=No+Image');
   }
 
   changeQty(id: number, raw: string) {

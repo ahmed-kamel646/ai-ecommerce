@@ -7,6 +7,7 @@ import { AuthService } from '../../services/auth.service';
 import { CartService } from '../../services/cart.service';
 import { NotificationService } from '../../services/notification.service';
 import { ProductService } from '../../services/product.service';
+import { resolveImageUrl } from '../../shared/image-url';
 
 @Component({
   selector: 'app-catalog',
@@ -130,9 +131,7 @@ export class CatalogComponent implements OnInit {
   }
 
   imageSrc(p: ProductSummary): string {
-    if (!p.imageUrl) return 'https://placehold.co/400x300?text=No+Image';
-    if (p.imageUrl.startsWith('http')) return p.imageUrl;
-    return `http://localhost:8080${p.imageUrl}`;
+    return resolveImageUrl(p.imageUrl);
   }
 
   addToCart(ev: Event, p: ProductSummary) {
