@@ -46,7 +46,7 @@ export interface Cart {
 }
 
 export type OrderStatus = 'PENDING' | 'PAID' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
-export type PaymentMethod = 'COD' | 'CARD';
+export type PaymentMethod = 'COD' | 'MOCK_CARD';
 
 export interface OrderItem {
   id: number;

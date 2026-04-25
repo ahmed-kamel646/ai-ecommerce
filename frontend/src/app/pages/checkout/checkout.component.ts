@@ -37,7 +37,7 @@ import { OrderService } from '../../services/order.service';
                 Cash on delivery
               </label>
               <label class="flex items-center gap-2">
-                <input type="radio" name="pm" value="CARD" [(ngModel)]="paymentMethod" />
+                <input type="radio" name="pm" value="MOCK_CARD" [(ngModel)]="paymentMethod" />
                 Card (mock)
               </label>
             </div>
