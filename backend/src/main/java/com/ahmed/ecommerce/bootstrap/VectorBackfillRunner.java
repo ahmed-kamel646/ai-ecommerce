@@ -77,8 +77,15 @@ public class VectorBackfillRunner implements ApplicationRunner {
         if (url == null || url.isBlank()) return new byte[0];
         try {
             if (url.startsWith("/files/")) {
+                Path base = Paths.get(uploadsDir).toAbsolutePath().normalize();
                 Path path = Paths.get(uploadsDir, url.substring("/files/".length()))
                         .toAbsolutePath().normalize();
+                // Defense-in-depth: even though imageUrl isn't currently writable
+                // through any endpoint, refuse to read outside the uploads root.
+                if (!path.startsWith(base)) {
+                    log.warn("Resolved image path escaped uploads root: {}", url);
+                    return new byte[0];
+                }
                 if (Files.exists(path)) {
                     return Files.readAllBytes(path);
                 }
