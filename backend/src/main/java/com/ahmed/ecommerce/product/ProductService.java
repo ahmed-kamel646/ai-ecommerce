@@ -50,6 +50,7 @@ public class ProductService {
 
     public ProductDetailDto findById(Long id) {
         return productRepository.findWithCategoryById(id)
+                .filter(p -> !p.isDraft())
                 .map(mapper::toDetail)
                 .orElseThrow(() -> new NotFoundException("Product not found: " + id));
     }

@@ -1,20 +1,26 @@
 package com.ahmed.ecommerce.product;
 
 import com.ahmed.ecommerce.AbstractIntegrationTest;
+import com.ahmed.ecommerce.common.NotFoundException;
 import com.ahmed.ecommerce.product.dto.ProductDetailDto;
 import com.ahmed.ecommerce.product.dto.ProductSummaryDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ProductServiceIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     ProductService productService;
+
+    @Autowired
+    ProductRepository productRepository;
 
     @Test
     void listsSeedProductsByDefault() {
@@ -45,6 +51,16 @@ class ProductServiceIntegrationTest extends AbstractIntegrationTest {
         ProductDetailDto detail = productService.findById(firstId);
         assertThat(detail.categoryName()).isNotNull();
         assertThat(detail.description()).isNotNull();
+    }
+
+    @Test
+    @Transactional
+    void detailHidesDraftProducts() {
+        Product first = productRepository.findAll().get(0);
+        first.setDraft(true);
+        productRepository.saveAndFlush(first);
+        assertThatThrownBy(() -> productService.findById(first.getId()))
+                .isInstanceOf(NotFoundException.class);
     }
 
     @Test
